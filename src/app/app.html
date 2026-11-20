@@ -1,0 +1,145 @@
+<div class="app-frame">
+  <header class="topbar">
+    <a class="wordmark" href="#top" (click)="showDiscover()" aria-label="CORE Atlas home">
+      <span class="brand-symbol" aria-hidden="true">
+        <svg viewBox="0 0 40 40" fill="none"><path d="M20 3.5 36.5 13v14L20 36.5 3.5 27V13L20 3.5Z" stroke="currentColor" stroke-width="1.5"/><path d="m20 11 8 4.6v8.8L20 29l-8-4.6v-8.8l8-4.6Z" stroke="currentColor" stroke-width="1.5"/><circle cx="20" cy="20" r="2.5" fill="currentColor"/></svg>
+      </span>
+      <span class="wordmark-type"><strong>CORE</strong><span>ATLAS</span></span>
+    </a>
+    <div class="topbar-center"><span class="live-dot"></span><span>OPEN RESEARCH INDEX</span><span class="topbar-divider"></span><span>POWERED BY CORE</span></div>
+    <a class="topbar-link" href="https://core.ac.uk/services/api" target="_blank" rel="noopener noreferrer">API documentation <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <div class="workspace">
+    <aside class="sidebar" aria-label="Workspace navigation">
+      <div class="sidebar-section-label">YOUR WORKSPACE</div>
+      <button type="button" class="side-link" [class.active]="activeView() === 'discover'" (click)="showDiscover()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.4"/><path d="m16 16 4.3 4.3"/></svg><span>Discover</span><span class="side-chevron">⌘ K</span>
+      </button>
+      <button type="button" class="side-link" [class.active]="activeView() === 'saved'" (click)="showSaved()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.8c0-.9.7-1.6 1.6-1.6h8.8c.9 0 1.6.7 1.6 1.6v16l-6-3.8-6 3.8v-16Z"/></svg><span>Reading list</span><span class="saved-count">{{ savedPapers().length }}</span>
+      </button>
+
+      <div class="sidebar-rule"></div>
+      <div class="sidebar-section-label">SEARCH SYNTAX</div>
+      <div class="syntax-card">
+        <div class="syntax-card-heading"><span class="syntax-spark">✳</span> Boolean ready</div>
+        <div class="syntax-operators"><code>AND</code><code>OR</code><code>NOT</code></div>
+        <p>Group ideas with parentheses, then search across CORE's research collection.</p>
+      </div>
+
+      <div class="sidebar-rule"></div>
+      <div class="sidebar-section-label">TRY A STARTER</div>
+      <button class="sidebar-query" type="button" (click)="chooseExample('(renewable energy AND storage)')"><span class="sidebar-query-dot"></span> Energy storage</button>
+      <button class="sidebar-query" type="button" (click)="chooseExample('(machine learning AND biodiversity)')"><span class="sidebar-query-dot"></span> AI + biodiversity</button>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-bottom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16M6.5 16V9.5m5.5 6.5V4m5.5 12V7"/></svg></div>
+        <div><strong>A clearer view of science.</strong><span>Search open scholarship, one query at a time.</span></div>
+      </div>
+    </aside>
+
+    <main class="main-content" id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> A RESEARCH DISCOVERY WORKSPACE</div>
+          <h1>Follow the question.<br><em>Find the evidence.</em></h1>
+          <p>Explore CORE's open research collection. Bring a specific question; leave with the papers that move it forward.</p>
+        </div>
+        <div class="hero-graphic" aria-hidden="true">
+          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div>
+          <div class="orbit-core"><span></span><span></span><span></span></div><i class="orbit-point point-one"></i><i class="orbit-point point-two"></i><i class="orbit-point point-three"></i>
+          <span class="graphic-label graphic-label-top">OPEN DATA</span><span class="graphic-label graphic-label-bottom">CONNECTED IDEAS</span>
+        </div>
+      </section>
+
+      <section class="search-panel" aria-labelledby="search-label">
+        <form (ngSubmit)="search(true)">
+          <div class="search-panel-head"><label id="search-label" for="research-query">SEARCH THE LITERATURE</label><span class="query-engine"><span class="engine-mark">⌘</span> CORE QUERY LANGUAGE</span></div>
+          <div class="query-row">
+            <svg class="query-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.4"/><path d="m16 16 4.3 4.3"/></svg>
+            <input id="research-query" name="query" type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Try: (drone AND (package OR delivery))" autocomplete="off" spellcheck="false" aria-describedby="query-help query-error">
+            @if (query()) { <button class="clear-query" type="button" (click)="clearSearch()" aria-label="Clear search">×</button> }
+            <button class="search-button" type="submit" [disabled]="loading()">
+              @if (loading()) { <span class="button-spinner"></span><span>Searching</span> }
+              @else { <span>Search CORE</span><span class="button-arrow" aria-hidden="true">↗</span> }
+            </button>
+          </div>
+          <div class="search-panel-foot">
+            <span id="query-help" class="query-helper">Combine terms with <code>AND</code>, <code>OR</code> or <code>NOT</code>. Group terms with parentheses.</span>
+            <label class="limit-control" for="result-limit">RETURN <select id="result-limit" name="resultLimit" [ngModel]="resultLimit()" (ngModelChange)="changeLimit($event)"><option [ngValue]="10">10</option><option [ngValue]="20">20</option><option [ngValue]="50">50</option><option [ngValue]="100">100</option></select> PAPERS</label>
+          </div>
+        </form>
+        @if (queryMessage()) { <p class="query-message" id="query-error" role="alert">{{ queryMessage() }}</p> }
+        @if (errorMessage()) { <p class="api-error" role="alert"><span>!</span>{{ errorMessage() }}</p> }
+        <div class="example-row"><span class="example-label">QUICK START</span>
+          @for (example of exampleQueries; track example.query) { <button type="button" class="example-chip" (click)="chooseExample(example.query)" [attr.aria-label]="'Search example: ' + example.label">{{ example.label }} <span aria-hidden="true">↗</span></button> }
+        </div>
+      </section>
+
+      <section class="results-layout" aria-label="Research results and query insights">
+        <div class="results-column">
+          <div class="results-heading">
+            <div><div class="eyebrow eyebrow-small"><span class="eyebrow-line"></span>{{ activeView() === 'saved' ? 'YOUR PERSONAL COLLECTION' : 'DISCOVERY' }}</div><h2>{{ activeView() === 'saved' ? 'Reading list' : (hasSearched() ? 'Search results' : 'Your next rabbit hole') }}</h2></div>
+            @if (activeView() === 'discover' && hasSearched() && !loading() && !errorMessage()) { <div class="result-count"><strong>{{ formatNumber(totalHits()) }}</strong><span>works<br>matched</span></div> }
+          </div>
+
+          <div class="result-tools">
+            <label class="filter-box" for="page-filter"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.4"/><path d="m16 16 4.3 4.3"/></svg><input id="page-filter" type="search" [ngModel]="filterTerm()" (ngModelChange)="filterTerm.set($event)" [ngModelOptions]="{standalone: true}" [placeholder]="activeView() === 'saved' ? 'Filter your reading list…' : 'Refine these results…'"><span class="filter-shortcut">⌕</span></label>
+            <label class="sort-control" for="sort-results"><span>SORT</span><select id="sort-results" [ngModel]="sortMode()" (ngModelChange)="setSortMode($event)" [ngModelOptions]="{standalone: true}"><option value="relevance">Relevance</option><option value="newest">Newest first</option></select></label>
+          </div>
+
+          @if (loading()) {
+            <div class="loading-state" role="status"><span class="loading-orbit"><i></i></span><strong>Following the citations…</strong><span>CORE is searching the open research index.</span></div>
+          } @else if (activeView() === 'discover' && !hasSearched()) {
+            <div class="empty-state welcome-state"><div class="empty-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M7 28.5 15.2 20l5.3 5.5 12-14"/><circle cx="32.5" cy="11.5" r="3"/><path d="M7 34.5h26"/></svg></div><span class="empty-kicker">START WITH A QUESTION</span><p>Try a focused phrase or combine related concepts. Your search will look across CORE's paper metadata.</p><button type="button" class="text-action" (click)="chooseExample('(drone AND (package OR delivery))')">Explore drone delivery research <span>→</span></button></div>
+          } @else if (errorMessage()) {
+            <div class="empty-state error-state"><span class="error-icon">!</span><strong>We couldn't reach the index.</strong><p>{{ errorMessage() }}</p><button class="text-action" type="button" (click)="search(false)">Try again <span>→</span></button></div>
+          } @else if (refinedPapers().length === 0) {
+            <div class="empty-state compact-empty"><div class="empty-icon small-empty-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="17" cy="17" r="9"/><path d="m23.5 23.5 8 8"/><path d="M13 17h8"/></svg></div><strong>{{ activeView() === 'saved' ? 'Your reading list is ready.' : 'No papers found in this view.' }}</strong><p>{{ activeView() === 'saved' ? 'Bookmark a paper to keep it here for later. Saved papers stay in this browser.' : (filterTerm() ? 'Try a shorter refinement or clear the filter.' : 'Try another phrase or broaden your Boolean expression.') }}</p>@if (filterTerm()) { <button type="button" class="text-action" (click)="filterTerm.set('')">Clear this filter <span>→</span></button> }</div>
+          } @else {
+            <div class="papers-list">
+              @for (paper of refinedPapers(); track paper.id) {
+                <article class="paper-card">
+                  <div class="paper-meta-top"><span class="paper-type"><span class="type-mark"></span>{{ paper.documentType }}</span>@if (paper.year) { <span class="paper-year">{{ paper.year }}</span> }</div>
+                  <h3><a [href]="'https://core.ac.uk/works/' + paper.id" target="_blank" rel="noopener noreferrer">{{ paper.title }}</a></h3>
+                  <p class="paper-authors">{{ formatAuthors(paper) }}</p>
+                  <p class="paper-abstract">{{ paper.abstract || 'CORE has not supplied an abstract for this record. Open the source to explore the available paper details.' }}</p>
+                  <div class="paper-card-bottom"><span class="access-mark"><span class="access-icon">↗</span> CORE record</span><div class="paper-actions">
+                    @if (paper.downloadUrl) { <a class="paper-open" [href]="paper.downloadUrl" target="_blank" rel="noopener noreferrer">Read paper <span aria-hidden="true">↗</span></a> }
+                    <button type="button" class="save-button" [class.saved]="isSaved(paper.id)" (click)="toggleSaved(paper)" [attr.aria-label]="isSaved(paper.id) ? 'Remove saved paper' : 'Save paper'" [attr.aria-pressed]="isSaved(paper.id)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.8c0-.9.7-1.6 1.6-1.6h8.8c.9 0 1.6.7 1.6 1.6v16l-6-3.8-6 3.8v-16Z"/></svg><span>{{ isSaved(paper.id) ? 'Saved' : 'Save' }}</span></button>
+                  </div></div>
+                </article>
+              }
+            </div>
+          }
+
+          @if (activeView() === 'discover' && hasSearched() && totalHits() > resultLimit()) {
+            <nav class="pagination" aria-label="Search results pages"><span>Showing <strong>{{ formatNumber(firstVisible()) }}–{{ formatNumber(lastVisible()) }}</strong> of {{ formatNumber(totalHits()) }}</span><div class="pagination-actions"><button type="button" (click)="goToPreviousPage()" [disabled]="!canGoBack() || loading()" aria-label="Previous page">←</button><span>{{ pageNumber() }} / {{ totalPages() }}</span><button type="button" (click)="goToNextPage()" [disabled]="!canGoForward() || loading()" aria-label="Next page">→</button></div></nav>
+          }
+        </div>
+
+        <aside class="insights-column">
+          <section class="chart-card" aria-labelledby="chart-heading">
+            <div class="chart-card-top"><span class="chart-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5h16M6.5 16V9.5m5.5 6.5V4m5.5 12V7"/></svg></span><span class="chart-period">QUERY PROFILE</span></div>
+            <h3 id="chart-heading">Publication years</h3><p class="chart-intro">See when the research behind your query was published.</p>
+            @if (hasSearched() && !loading() && chartBars().length > 0) {
+              <div class="chart-total"><strong>{{ formatNumber(chartTotal()) }}</strong><span>works across all matching years</span></div>
+              <div class="bar-chart" role="img" [attr.aria-label]="'Publication year chart covering ' + chartBars().length + ' years'">
+                @for (bucket of chartBars(); track bucket.year) { <div class="bar-column"><span class="bar-value">{{ bucket.count > 999 ? (bucket.count / 1000 | number:'1.0-0') + 'k' : bucket.count }}</span><div class="bar-track"><div class="bar-fill" [style.height.%]="bucket.height"></div></div><span class="bar-year">{{ bucket.year }}</span></div> }
+              </div>
+              <p class="chart-footnote">{{ chartSource() === 'all-matches' ? 'CORE aggregation · all matching records' : 'Based on papers in the current result page' }}</p>
+            } @else {
+              <div class="chart-empty"><div class="chart-empty-lines"><i></i><i></i><i></i><i></i><i></i><i></i></div><span>Your query's timeline<br>will appear here.</span></div><p class="chart-footnote">Enter a query to reveal its publication profile.</p>
+            }
+          </section>
+          <section class="syntax-note"><span class="syntax-note-icon">✳</span><div><strong>Search with intent.</strong><p>Use parentheses to group an idea. The full query runs against the CORE index—not just this page.</p></div></section>
+          <div class="source-note"><span class="source-mark">C</span><p>Open research data<br><a href="https://core.ac.uk/" target="_blank" rel="noopener noreferrer">CORE · Explore the collection ↗</a></p></div>
+        </aside>
+      </section>
+
+      <footer class="page-footer"><span>Made for curiosity. Data from <a href="https://core.ac.uk/" target="_blank" rel="noopener noreferrer">CORE</a>.</span><span>Anonymous API quota · 100 tokens/day · <a href="https://api.core.ac.uk/docs/v3" target="_blank" rel="noopener noreferrer">API details ↗</a></span></footer>
+    </main>
+  </div>
+  @if (toastMessage()) { <div class="toast" role="status"><span class="toast-check">✓</span>{{ toastMessage() }}</div> }
+</div>
